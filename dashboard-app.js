@@ -12,13 +12,11 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
-  try {
-    return <Dashboard />;
-  } catch (error) {
-    console.error('App component error:', error);
-    return null;
-  }
+  return <Dashboard />;
 }
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
