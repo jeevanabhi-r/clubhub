@@ -5,12 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ClubHub - Login</title>
     <meta name="description" content="Manage college clubs and events with ClubHub.">
-    
-    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
-    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+
+    <!-- ✅ React (use normal CDN, not trickle one) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- ✅ Trickle SDK (VERY IMPORTANT FIX) -->
+    <script src="https://resource.trickle.so/sdk/trickle.js"></script>
+
+    <!-- UI -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -23,7 +30,8 @@
                 }
             }
         }
-        // Default to dark mode for black interface
+
+        // Dark mode default
         if (localStorage.getItem('theme') === 'light') {
             document.documentElement.classList.remove('dark');
         } else {
@@ -31,14 +39,15 @@
             if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
         }
     </script>
+
     <link href="https://resource.trickle.so/vendor_lib/unpkg/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
 
     <style type="text/tailwindcss">
     @layer theme {
         :root {
-            --primary-color: #f97316; /* orange-500 */
-            --primary-hover: #ea580c; /* orange-600 */
-            --bg-color: #fff7ed;      /* orange-50 */
+            --primary-color: #f97316;
+            --primary-hover: #ea580c;
+            --bg-color: #fff7ed;
         }
     }
     @layer base {
@@ -57,8 +66,11 @@
     }
     </style>
 </head>
+
 <body>
     <div id="root"></div>
+
+    <!-- ✅ Correct order -->
     <script type="text/babel" src="components/AuthForm.js"></script>
     <script type="text/babel" src="auth-app.js"></script>
 </body>
