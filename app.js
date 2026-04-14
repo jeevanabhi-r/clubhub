@@ -36,22 +36,8 @@ class ErrorBoundary extends React.Component {
 }
 
 function App() {
-  try {
-    // replace the below code with your app code
-    return (
-      <div className="min-h-screen flex items-center justify-center" data-name="app" data-file="app.js">
-        <h1 className="text-3xl font-bold"></h1>
-      </div>
-    );
-  } catch (error) {
-    console.error('App component error:', error);
-    return null;
-  }
+  return <AuthForm />;
 }
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>
-);
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
