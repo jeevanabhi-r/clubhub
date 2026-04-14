@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Dashboard</title>
+<title>ClubHub Dashboard</title>
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,7 +11,7 @@
 
 </head>
 
-<body class="bg-black text-white min-h-screen">
+<body class="bg-black text-white">
 
 <div id="root"></div>
 
@@ -19,15 +19,15 @@
 
 function Dashboard() {
   const [events, setEvents] = React.useState([]);
+  const [view, setView] = React.useState("events");
+  const [showForm, setShowForm] = React.useState(false);
+
   const [title, setTitle] = React.useState("");
+  const [desc, setDesc] = React.useState("");
 
   React.useEffect(() => {
     const user = localStorage.getItem("clubhub_user");
-
-    if (!user) {
-      window.location.href = "/";
-    }
-
+    if (!user) window.location.href = "/";
     loadEvents();
   }, []);
 
@@ -39,11 +39,18 @@ function Dashboard() {
   const addEvent = () => {
     if (!title) return;
 
-    const newEvent = { id: Date.now(), title };
-    const updated = [...events, newEvent];
+    const newEvent = {
+      id: Date.now(),
+      title,
+      desc
+    };
 
+    const updated = [...events, newEvent];
     localStorage.setItem("events", JSON.stringify(updated));
+
     setTitle("");
+    setDesc("");
+    setShowForm(false);
     loadEvents();
   };
 
@@ -54,45 +61,121 @@ function Dashboard() {
   };
 
   return (
-    <div className="p-6">
+    <div className="flex min-h-screen">
 
-      <h1 className="text-2xl font-bold text-orange-500 mb-4">
-        Dashboard
-      </h1>
+      {/* SIDEBAR */}
+      <div className="w-64 bg-gray-900 p-4">
 
-      <div className="flex gap-2 mb-4">
-        <input
-          className="text-black p-2 rounded w-full"
-          placeholder="Event title"
-          value={title}
-          onChange={(e)=>setTitle(e.target.value)}
-        />
-        <button
-          className="bg-orange-500 px-4 rounded"
-          onClick={addEvent}
+        <h1 className="text-xl font-bold text-orange-500 mb-6">ClubHub</h1>
+
+        <button 
+          className="block w-full text-left p-2 hover:bg-gray-800 rounded mb-2"
+          onClick={()=>setView("events")}
         >
-          Add
+          📅 Manage Events
         </button>
+
+        <button 
+          className="block w-full text-left p-2 hover:bg-gray-800 rounded"
+          onClick={()=>setView("profile")}
+        >
+          👤 My Profile
+        </button>
+
+        <button 
+          className="mt-10 text-red-400"
+          onClick={()=>{
+            localStorage.removeItem("clubhub_user");
+            window.location.href="/";
+          }}
+        >
+          Logout
+        </button>
+
       </div>
 
-      <ul>
-        {events.map(e => (
-          <li key={e.id} className="flex justify-between bg-gray-800 p-2 mb-2 rounded">
-            {e.title}
-            <button onClick={()=>deleteEvent(e.id)}>❌</button>
-          </li>
-        ))}
-      </ul>
+      {/* MAIN */}
+      <div className="flex-1 p-6">
 
-      <button
-        className="mt-6 bg-red-500 px-4 py-2 rounded"
-        onClick={()=>{
-          localStorage.removeItem("clubhub_user");
-          window.location.href = "/";
-        }}
-      >
-        Logout
-      </button>
+        {/* EVENTS VIEW */}
+        {view === "events" && (
+          <>
+            <div className="flex justify-between mb-4">
+              <h2 className="text-2xl">Event Management</h2>
+              <button 
+                className="bg-orange-500 px-4 py-2 rounded"
+                onClick={()=>setShowForm(true)}
+              >
+                + Add Event
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              {events.map(e => (
+                <div key={e.id} className="bg-gray-800 p-4 rounded">
+                  <h3 className="font-bold">{e.title}</h3>
+                  <p className="text-sm text-gray-400">{e.desc}</p>
+                  <button 
+                    className="mt-2 text-red-400"
+                    onClick={()=>deleteEvent(e.id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* PROFILE VIEW */}
+        {view === "profile" && (
+          <div>
+            <h2 className="text-2xl mb-4">Profile Settings</h2>
+            <div className="bg-gray-800 p-4 rounded w-96">
+              <p>Name: Jeevan Abhi</p>
+              <p>Email: Stored User</p>
+              <button className="mt-4 bg-orange-500 px-4 py-2 rounded">
+                Update Profile
+              </button>
+            </div>
+          </div>
+        )}
+
+      </div>
+
+      {/* ADD EVENT MODAL */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center">
+
+          <div className="bg-gray-900 p-6 rounded w-96">
+
+            <h2 className="text-xl mb-4">Create Event</h2>
+
+            <input
+              className="text-black p-2 rounded w-full mb-3"
+              placeholder="Title"
+              value={title}
+              onChange={(e)=>setTitle(e.target.value)}
+            />
+
+            <textarea
+              className="text-black p-2 rounded w-full mb-3"
+              placeholder="Description"
+              value={desc}
+              onChange={(e)=>setDesc(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-2">
+              <button onClick={()=>setShowForm(false)}>Cancel</button>
+              <button className="bg-orange-500 px-4 py-2 rounded" onClick={addEvent}>
+                Save
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </div>
   );
