@@ -1,66 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClubHub - Dashboard</title>
+<meta charset="UTF-8">
+<title>Dashboard</title>
 
-    <!-- ✅ React (correct CDN) -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- ✅ Trickle SDK (VERY IMPORTANT) -->
-    <script src="https://resource.trickle.so/sdk/trickle.js"></script>
-
-    <!-- UI -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#f97316',
-                        'primary-hover': '#ea580c',
-                    }
-                }
-            }
-        }
-
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-            if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
-        }
-    </script>
-
-    <link href="https://resource.trickle.so/vendor_lib/unpkg/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
-
-    <style type="text/tailwindcss">
-    @layer theme {
-        :root {
-            --primary-color: #f97316;
-            --primary-hover: #ea580c;
-            --bg-color: #fff7ed;
-        }
-    }
-    @layer base {
-        body { 
-            @apply bg-gray-50 dark:bg-black dark:text-gray-100 transition-colors duration-200;
-            font-family: 'Inter', sans-serif; 
-        }
-    }
-    </style>
 </head>
 
-<body>
-    <div id="root"></div>
+<body class="bg-black text-white">
 
-    <!-- ✅ Correct order -->
-    <script type="text/babel" src="components/Dashboard.js"></script>
-    <script type="text/babel" src="dashboard-app.js"></script>
+<div id="root"></div>
+
+<script type="text/babel" src="components/Dashboard.js"></script>
+<script type="text/babel" src="dashboard-app.js"></script>
+
 </body>
 </html>
