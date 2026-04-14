@@ -11,12 +11,97 @@
 
 </head>
 
-<body class="bg-black text-white">
+<body class="bg-black text-white min-h-screen">
 
 <div id="root"></div>
 
-<script type="text/babel" src="components/Dashboard.js"></script>
-<script type="text/babel" src="dashboard-app.js"></script>
+<script type="text/babel">
+
+function Dashboard() {
+  const [events, setEvents] = React.useState([]);
+  const [title, setTitle] = React.useState("");
+
+  React.useEffect(() => {
+    const user = localStorage.getItem("clubhub_user");
+
+    if (!user) {
+      window.location.href = "/";
+    }
+
+    loadEvents();
+  }, []);
+
+  const loadEvents = () => {
+    const data = JSON.parse(localStorage.getItem("events") || "[]");
+    setEvents(data);
+  };
+
+  const addEvent = () => {
+    if (!title) return;
+
+    const newEvent = { id: Date.now(), title };
+    const updated = [...events, newEvent];
+
+    localStorage.setItem("events", JSON.stringify(updated));
+    setTitle("");
+    loadEvents();
+  };
+
+  const deleteEvent = (id) => {
+    const updated = events.filter(e => e.id !== id);
+    localStorage.setItem("events", JSON.stringify(updated));
+    loadEvents();
+  };
+
+  return (
+    <div className="p-6">
+
+      <h1 className="text-2xl font-bold text-orange-500 mb-4">
+        Dashboard
+      </h1>
+
+      <div className="flex gap-2 mb-4">
+        <input
+          className="text-black p-2 rounded w-full"
+          placeholder="Event title"
+          value={title}
+          onChange={(e)=>setTitle(e.target.value)}
+        />
+        <button
+          className="bg-orange-500 px-4 rounded"
+          onClick={addEvent}
+        >
+          Add
+        </button>
+      </div>
+
+      <ul>
+        {events.map(e => (
+          <li key={e.id} className="flex justify-between bg-gray-800 p-2 mb-2 rounded">
+            {e.title}
+            <button onClick={()=>deleteEvent(e.id)}>❌</button>
+          </li>
+        ))}
+      </ul>
+
+      <button
+        className="mt-6 bg-red-500 px-4 py-2 rounded"
+        onClick={()=>{
+          localStorage.removeItem("clubhub_user");
+          window.location.href = "/";
+        }}
+      >
+        Logout
+      </button>
+
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<Dashboard />);
+
+</script>
 
 </body>
 </html>
