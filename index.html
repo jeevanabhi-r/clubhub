@@ -6,11 +6,11 @@
   <title>ClubHub</title>
 
   <!-- React -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-  <!-- ✅ Babel (ONLY ONE) -->
+  <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+  <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
 
   <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -25,19 +25,25 @@
 </head>
 
 <body>
+  <div id="root"></div>
 
-<div id="root"></div>
 
-<!-- 🔥 Firebase -->
+<script type="text/babel" src="./components/AuthForm.js"></script>
+<script type="text/babel" src="./auth-app.js"></script>
+
+  <!-- 🔥 Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
 import { 
   getFirestore, 
   collection, 
   getDocs, 
-  addDoc 
+  addDoc, 
+  updateDoc, 
+  doc 
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
+// 🔑 Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
   authDomain: "clubhub2-226c0.firebaseapp.com",
@@ -47,176 +53,198 @@ const firebaseConfig = {
   appId: "1:473457215975:web:17c1eb7278a428be175542"
 };
 
+// ✅ Init
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ Global
+// ✅ MAKE GLOBAL (VERY IMPORTANT)
 window.db = db;
 window.collection = collection;
 window.getDocs = getDocs;
 window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.doc = doc;
 
-console.log("🔥 Firebase Ready");
+console.log("🔥 Firebase Connected");
 </script>
+ <script type="text/babel">
 
-<!-- 🔥 React App -->
-<script type="text/babel">
+    function AuthForm({ onLogin }) {
+      const [view, setView] = React.useState("login");
+      const [email, setEmail] = React.useState("");
+      const [password, setPassword] = React.useState("");
+      const [name, setName] = React.useState("");
+      const [msg, setMsg] = React.useState("");
 
-function AuthForm({ onLogin }) {
-  const [view, setView] = React.useState("login");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [name, setName] = React.useState("");
-  const [msg, setMsg] = React.useState("");
+      // REGISTER
+      const handleRegister = async (e) => {
+        e.preventDefault();
 
-  // LOGIN
-  const handleLogin = async (e) => {
-    e.preventDefault();
+        try {
+          await window.addDoc(window.collection(window.db, "users"), {
+            name,
+            email,
+            password
+          });
 
-    if (!window.db) {
-      setMsg("⏳ Firebase loading...");
-      return;
+          setMsg("✅ Registered successfully");
+          setView("login");
+        } catch (err) {
+          console.error(err);
+          setMsg("❌ Registration failed");
+        }
+      };
+
+      // LOGIN
+      const handleLogin = async (e) => {
+        e.preventDefault();
+
+        try {
+          const snapshot = await window.getDocs(
+            window.collection(window.db, "users")
+          );
+
+          let foundUser = null;
+
+          snapshot.forEach((doc) => {
+            const user = doc.data();
+            if (user.email === email && user.password === password) {
+              foundUser = user;
+            }
+          });
+
+          if (foundUser) {
+            setMsg("✅ Login successful");
+
+            // 🔥 Redirect to dashboard
+            onLogin(foundUser);
+
+          } else {
+            setMsg("❌ Invalid credentials");
+          }
+
+        } catch (err) {
+          console.error(err);
+          setMsg("❌ Login error");
+        }
+      };
+
+      return (
+        <div className="space-y-4">
+
+          <h2 className="text-xl text-center">
+            {view === "login" ? "Login" : "Register"}
+          </h2>
+
+          {msg && <p className="text-yellow-400 text-center">{msg}</p>}
+
+          {view === "login" && (
+            <form onSubmit={handleLogin} className="space-y-3">
+
+              <input type="email" placeholder="Email"
+                className="w-full p-3 rounded bg-gray-800"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)} />
+
+              <input type="password" placeholder="Password"
+                className="w-full p-3 rounded bg-gray-800"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} />
+
+              <button className="w-full bg-orange-500 p-3 rounded">
+                Login
+              </button>
+
+              <p className="text-center text-gray-400">
+                No account?
+                <button type="button"
+                  onClick={() => setView("register")}
+                  className="text-orange-400 ml-1">
+                  Register
+                </button>
+              </p>
+
+            </form>
+          )}
+
+          {view === "register" && (
+            <form onSubmit={handleRegister} className="space-y-3">
+
+              <input type="text" placeholder="Name"
+                className="w-full p-3 rounded bg-gray-800"
+                value={name}
+                onChange={(e) => setName(e.target.value)} />
+
+              <input type="email" placeholder="Email"
+                className="w-full p-3 rounded bg-gray-800"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)} />
+
+              <input type="password" placeholder="Password"
+                className="w-full p-3 rounded bg-gray-800"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)} />
+
+              <button className="w-full bg-orange-500 p-3 rounded">
+                Register
+              </button>
+
+              <p className="text-center text-gray-400">
+                Already have account?
+                <button type="button"
+                  onClick={() => setView("login")}
+                  className="text-orange-400 ml-1">
+                  Login
+                </button>
+              </p>
+
+            </form>
+          )}
+
+        </div>
+      );
     }
 
-    const snapshot = await window.getDocs(
-      window.collection(window.db, "users")
-    );
+    // 🔥 DASHBOARD
+    function Dashboard({ user, onLogout }) {
+      return (
+        <div className="text-center space-y-4">
 
-    let foundUser = null;
+          <h2 className="text-2xl">Welcome</h2>
+          <p className="text-orange-400 text-lg">{user.name}</p>
 
-    snapshot.forEach((doc) => {
-      const user = doc.data();
-      if (user.email === email && user.password === password) {
-        foundUser = user;
-      }
-    });
-
-    if (foundUser) {
-      onLogin(foundUser);
-    } else {
-      setMsg("❌ Invalid email or password");
-    }
-  };
-
-  // REGISTER
-  const handleRegister = async (e) => {
-    e.preventDefault();
-
-    if (!window.db) {
-      setMsg("⏳ Firebase loading...");
-      return;
-    }
-
-    await window.addDoc(
-      window.collection(window.db, "users"),
-      {
-        name,
-        email,
-        password,
-        role: "student"
-      }
-    );
-
-    setMsg("✅ Registered successfully");
-    setView("login");
-  };
-
-  return (
-    <div className="space-y-4">
-
-      {msg && <p className="text-center text-yellow-400">{msg}</p>}
-
-      {view === "login" && (
-        <form onSubmit={handleLogin} className="space-y-3">
-
-          <input className="w-full p-3 rounded bg-gray-800"
-            placeholder="Email"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)} />
-
-          <input type="password"
-            className="w-full p-3 rounded bg-gray-800"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)} />
-
-          <button className="w-full bg-orange-500 p-3 rounded">
-            Login
+          <button
+            onClick={onLogout}
+            className="bg-red-500 px-4 py-2 rounded"
+          >
+            Logout
           </button>
 
-          <p className="text-center text-gray-400">
-            No account?
-            <span onClick={()=>setView("register")}
-              className="text-orange-400 ml-1 cursor-pointer">
-              Register
-            </span>
-          </p>
+        </div>
+      );
+    }
 
-        </form>
-      )}
+    // 🔥 MAIN APP
+    function App() {
+      const [user, setUser] = React.useState(null);
 
-      {view === "register" && (
-        <form onSubmit={handleRegister} className="space-y-3">
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-full max-w-md p-6 bg-gray-900 rounded-xl">
 
-          <input className="w-full p-3 rounded bg-gray-800"
-            placeholder="Name"
-            value={name}
-            onChange={(e)=>setName(e.target.value)} />
+            {!user ? (
+              <AuthForm onLogin={setUser} />
+            ) : (
+              <Dashboard user={user} onLogout={() => setUser(null)} />
+            )}
 
-          <input className="w-full p-3 rounded bg-gray-800"
-            placeholder="Email"
-            value={email}
-            onChange={(e)=>setEmail(e.target.value)} />
-
-          <input type="password"
-            className="w-full p-3 rounded bg-gray-800"
-            placeholder="Password"
-            value={password}
-            onChange={(e)=>setPassword(e.target.value)} />
-
-          <button className="w-full bg-orange-500 p-3 rounded">
-            Register
-          </button>
-
-          <p className="text-center text-gray-400">
-            Already have account?
-            <span onClick={()=>setView("login")}
-              className="text-orange-400 ml-1 cursor-pointer">
-              Login
-            </span>
-          </p>
-
-        </form>
-      )}
-
-    </div>
-  );
-}
-
-function App() {
-  const [user, setUser] = React.useState(null);
-
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md bg-gray-900 p-6 rounded-xl">
-
-        {!user ? (
-          <AuthForm onLogin={setUser} />
-        ) : (
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl">Welcome</h2>
-            <p className="text-orange-400">{user.name}</p>
           </div>
-        )}
+        </div>
+      );
+    }
 
-      </div>
-    </div>
-  );
-}
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-
-</script>
-
+  </script>
 </body>
 </html>
