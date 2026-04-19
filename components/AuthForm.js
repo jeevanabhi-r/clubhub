@@ -52,40 +52,41 @@ function AuthForm() {
 
   // 📝 REGISTER
   const handleRegister = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  if (!email || !password || !name) return;
 
-    if (!email || !password || !name) return;
+  setLoading(true);
+  setMsg({ type: '', text: '' });
 
-    setLoading(true);
-    setMsg({ type: '', text: '' });
+  try {
+    // 🔥 Save to Firebase
+    await window.addDoc(window.collection(window.db, "users"), {
+      name,
+      email,
+      password,
+      role: "student"
+    });
 
-    try {
-      await window.addDoc(window.collection(window.db, "users"), {
-        name,
-        email,
-        password,
-        role: "student"
-      });
+    // 🔥 Save session
+    localStorage.setItem("clubhub_user", JSON.stringify({
+      name,
+      email,
+      role: "student"
+    }));
 
-      localStorage.setItem("clubhub_user", JSON.stringify({
-        name,
-        email,
-        role: "student"
-      }));
+    setMsg({ type: 'success', text: 'Registration successful! Please login.' });
 
-      setMsg({ type: 'success', text: 'Registration successful!' });
+    setTimeout(() => {
+      setView('login'); // stay on same UI flow
+    }, 1500);
 
-      setTimeout(() => {
-        window.location.href = "dashboard.html";
-      }, 1500);
+  } catch (err) {
+    console.error(err);
+    setMsg({ type: 'error', text: 'Registration failed' });
+  }
 
-    } catch (err) {
-      console.error(err);
-      setMsg({ type: 'error', text: 'Registration failed' });
-    }
-
-    setLoading(false);
-  };
+  setLoading(false);
+};
 
   return (
     <div className="space-y-4">
