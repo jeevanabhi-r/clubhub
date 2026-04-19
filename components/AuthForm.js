@@ -53,36 +53,61 @@ function AuthForm() {
   // 📝 REGISTER
   const handleRegister = async (e) => {
   e.preventDefault();
+
   if (!email || !password || !name) return;
 
   setLoading(true);
-  setMsg({ type: '', text: '' });
+  setMsg({ type: "", text: "" });
 
   try {
-    // 🔥 Save to Firebase
-    await window.addDoc(window.collection(window.db, "users"), {
-      name,
-      email,
-      password,
-      role: "student"
+    // 🔍 Check if user already exists
+    const snapshot = await window.getDocs(
+      window.collection(window.db, "users")
+    );
+
+    let exists = false;
+
+    snapshot.forEach((doc) => {
+      if (doc.data().email === email) {
+        exists = true;
+      }
     });
 
-    // 🔥 Save session
+    if (exists) {
+      setMsg({ type: "error", text: "Email already registered" });
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Save user in Firebase
+    const docRef = await window.addDoc(
+      window.collection(window.db, "users"),
+      {
+        name,
+        email,
+        password,
+        role: "student",
+        createdAt: new Date()
+      }
+    );
+
+    // ✅ Save session (IMPORTANT FIX)
     localStorage.setItem("clubhub_user", JSON.stringify({
+      id: docRef.id,
       name,
       email,
       role: "student"
     }));
 
-    setMsg({ type: 'success', text: 'Registration successful! Please login.' });
+    setMsg({ type: "success", text: "Registration successful" });
 
     setTimeout(() => {
-      setView('login'); // stay on same UI flow
+      setView("login");
     }, 1500);
 
   } catch (err) {
-    console.error(err);
-    setMsg({ type: 'error', text: 'Registration failed' });
+    console.error("REGISTER ERROR:", err);
+    setMsg({ type: "error", text: "Registration failed" });
   }
 
   setLoading(false);
