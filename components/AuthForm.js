@@ -1,25 +1,24 @@
 function AuthForm() {
-  const [view, setView] = React.useState('login');
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [name, setName] = React.useState('');
+  const [view, setView] = React.useState("login");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [name, setName] = React.useState("");
   const [loading, setLoading] = React.useState(false);
-  const [msg, setMsg] = React.useState({ type: '', text: '' });
+  const [msg, setMsg] = React.useState({ type: "", text: "" });
 
   React.useEffect(() => {
-    if (localStorage.getItem('clubhub_user')) {
-      window.location.href = 'dashboard.html';
+    if (localStorage.getItem("clubhub_user")) {
+      window.location.href = "dashboard.html";
     }
   }, []);
 
   // 🔐 LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
-
     if (!email || !password) return;
 
     setLoading(true);
-    setMsg({ type: '', text: '' });
+    setMsg({ type: "", text: "" });
 
     try {
       const snapshot = await window.getDocs(
@@ -39,12 +38,11 @@ function AuthForm() {
         localStorage.setItem("clubhub_user", JSON.stringify(foundUser));
         window.location.href = "dashboard.html";
       } else {
-        setMsg({ type: 'error', text: 'Invalid email or password' });
+        setMsg({ type: "error", text: "Invalid email or password" });
       }
-
     } catch (err) {
       console.error(err);
-      setMsg({ type: 'error', text: 'Login failed' });
+      setMsg({ type: "error", text: "Login failed" });
     }
 
     setLoading(false);
@@ -52,172 +50,147 @@ function AuthForm() {
 
   // 📝 REGISTER
   const handleRegister = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    if (!email || !password || !name) return;
 
-  if (!email || !password || !name) return;
+    setLoading(true);
+    setMsg({ type: "", text: "" });
 
-  setLoading(true);
-  setMsg({ type: "", text: "" });
+    try {
+      const snapshot = await window.getDocs(
+        window.collection(window.db, "users")
+      );
 
-  try {
-    // 🔍 Check if user already exists
-    const snapshot = await window.getDocs(
-      window.collection(window.db, "users")
-    );
+      let exists = false;
+      snapshot.forEach((doc) => {
+        if (doc.data().email === email) {
+          exists = true;
+        }
+      });
 
-    let exists = false;
-
-    snapshot.forEach((doc) => {
-      if (doc.data().email === email) {
-        exists = true;
+      if (exists) {
+        setMsg({ type: "error", text: "Email already exists" });
+        setLoading(false);
+        return;
       }
-    });
 
-    if (exists) {
-      setMsg({ type: "error", text: "Email already registered" });
-      setLoading(false);
-      return;
-    }
-
-    // ✅ Save user in Firebase
-    const docRef = await window.addDoc(
-      window.collection(window.db, "users"),
-      {
+      await window.addDoc(window.collection(window.db, "users"), {
         name,
         email,
         password,
         role: "student",
-        createdAt: new Date()
-      }
-    );
+      });
 
-    // ✅ Save session (IMPORTANT FIX)
-    localStorage.setItem("clubhub_user", JSON.stringify({
-      id: docRef.id,
-      name,
-      email,
-      role: "student"
-    }));
+      setMsg({ type: "success", text: "Registration successful" });
 
-    setMsg({ type: "success", text: "Registration successful" });
+      setTimeout(() => {
+        setView("login");
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      setMsg({ type: "error", text: "Registration failed" });
+    }
 
-    setTimeout(() => {
-      setView("login");
-    }, 1500);
+    setLoading(false);
+  };
 
-  } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    setMsg({ type: "error", text: "Registration failed" });
-  }
+  return (
+    <div className="space-y-4">
+      {msg.text && (
+        <div
+          className={`p-3 rounded ${
+            msg.type === "error"
+              ? "bg-red-500 text-white"
+              : "bg-green-500 text-white"
+          }`}
+        >
+          {msg.text}
+        </div>
+      )}
 
-  setLoading(false);
-};
+      {view === "login" && (
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="text-sm">Email</label>
+            <input
+              type="email"
+              placeholder="student@college.edu"
+              className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
 
- return (
-  <div className="space-y-4">
+          <div>
+            <label className="text-sm">Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-    {msg.text && (
-      <div className={`p-3 rounded ${msg.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-        {msg.text}
-      </div>
-    )}
+          <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg">
+            {loading ? "Logging in..." : "Login to ClubHub"}
+          </button>
 
-    {view === 'login' && (
-      <form onSubmit={handleLogin} className="space-y-4">
+          <p className="text-center text-gray-400">
+            Don’t have an account?
+            <button
+              type="button"
+              className="text-orange-500 ml-1"
+              onClick={() => setView("register")}
+            >
+              Register
+            </button>
+          </p>
+        </form>
+      )}
 
-        {/* Email */}
-        <div>
-          <label className="block text-sm mb-1">Email</label>
+      {view === "register" && (
+        <form onSubmit={handleRegister} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Full Name"
+            className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
           <input
             type="email"
-            placeholder="student@college.edu"
-            className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="Email"
+            className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
-
-        {/* Password */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <label>Password</label>
-            <span className="text-orange-500 cursor-pointer">Forgot Password?</span>
-          </div>
 
           <input
             type="password"
-            placeholder="••••••••"
-            className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="Password"
+            className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
 
-        {/* Button */}
-        <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg">
-          {loading ? "Logging in..." : "Login to ClubHub"}
-        </button>
-
-        {/* Switch */}
-        <p className="text-center text-gray-400">
-          Don’t have an account?
-          <button
-            type="button"
-            className="text-orange-500 ml-1"
-            onClick={() => setView('register')}
-          >
-            Register
+          <button className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg">
+            {loading ? "Creating..." : "Register"}
           </button>
-        </p>
 
-      </form>
-    )}
-
-    {/* REGISTER UI (keep simple or same style) */}
-    {view === 'register' && (
-      <form onSubmit={handleRegister} className="space-y-4">
-
-        <input
-          type="text"
-          placeholder="Full Name"
-          className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-
-        <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg">
-          {loading ? "Creating..." : "Register"}
-        </button>
-
-        <p className="text-center text-gray-400">
-          Already have account?
-          <button
-            type="button"
-            className="text-orange-500 ml-1"
-            onClick={() => setView('login')}
-          >
-            Login
-          </button>
-        </p>
-
-      </form>
-    )}
-
-  </div>
-);
+          <p className="text-center text-gray-400">
+            Already have account?
+            <button
+              type="button"
+              className="text-orange-500 ml-1"
+              onClick={() => setView("login")}
+            >
+              Login
+            </button>
+          </p>
+        </form>
+      )}
+    </div>
+  );
+}
