@@ -69,9 +69,9 @@
     <div id="events-container"></div>
     <script type="text/babel" src="components/AuthForm.js"></script>
     <script type="text/babel" src="auth-app.js"></script>
-    <script type="module">
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
@@ -85,12 +85,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// 🔥 MAKE GLOBAL (IMPORTANT)
+// 🔥 MAKE GLOBAL (VERY IMPORTANT)
 window.db = db;
 window.collection = collection;
+window.getDocs = getDocs;
 window.addDoc = addDoc;
 
-console.log("Firebase (Auth page) connected ✅");
+console.log("🔥 Firebase Connected");
 </script>
    
 </body>
