@@ -133,11 +133,15 @@ const handleSaveEvent = async (e) => {
     setShowEventForm(true);
   };
 
-  const handleUpdateProfile = async () => {
-  try {
-    const user = JSON.parse(localStorage.getItem("clubhub_user"));
+ const handleUpdateProfile = async (e) => {
+  e.preventDefault();
 
-    if (!user) return;
+  try {
+    const form = e.target;
+    const newName = form.name.value;
+
+    const currentUser = JSON.parse(localStorage.getItem("clubhub_user"));
+    if (!currentUser) return;
 
     const snapshot = await window.getDocs(
       window.collection(window.db, "users")
@@ -146,28 +150,42 @@ const handleSaveEvent = async (e) => {
     let docId = null;
 
     snapshot.forEach((doc) => {
-      if (doc.data().email === user.email) {
+      if (doc.data().email === currentUser.email) {
         docId = doc.id;
       }
     });
 
     if (!docId) {
-      alert("User not found");
+      alert("User not found in DB");
       return;
     }
 
+    // ✅ UPDATE FIREBASE
     await window.updateDoc(
       window.doc(window.db, "users", docId),
       {
-        name: user.name   // or use state variable
+        name: newName,
+        avatar: avatarPreview || currentUser.avatar || ""
       }
     );
 
-    alert("Profile updated successfully");
+    // ✅ UPDATE LOCAL STORAGE
+    const updatedUser = {
+      ...currentUser,
+      name: newName,
+      avatar: avatarPreview || currentUser.avatar || ""
+    };
+
+    localStorage.setItem("clubhub_user", JSON.stringify(updatedUser));
+
+    // ✅ UPDATE UI
+    setUser(updatedUser);
+
+    setProfileMsg({ type: 'success', text: 'Profile updated successfully!' });
 
   } catch (err) {
     console.error(err);
-    alert("Update failed");
+    setProfileMsg({ type: 'error', text: 'Update failed' });
   }
 };
 
