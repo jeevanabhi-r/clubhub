@@ -97,29 +97,23 @@ function Dashboard() {
   setEvents(eventsData);
   setLoading(false);
 };
+const handleSaveEvent = async (e) => {
+  e.preventDefault();
 
-  const handleSaveEvent = (e) => {
-    e.preventDefault();
-    const evts = getEvents();
-    
-    if (formData.id) {
-      const idx = evts.findIndex(ev => ev.id === formData.id);
-      if (idx > -1) {
-        evts[idx] = { ...formData };
-      }
-    } else {
-      evts.push({
-        ...formData,
-        id: Date.now().toString()
-      });
-    }
-    
-    saveEvents(evts);
-    setShowEventForm(false);
-    setFormData({ title: '', description: '', date: '', imageOrLink: '', driveLink: '', id: null });
-    fetchEvents();
-  };
+  await window.addDoc(window.collection(window.db, "events"), {
+    title: formData.title,
+    description: formData.description,
+    date: formData.date,
+    imageOrLink: formData.imageOrLink || "",
+    driveLink: formData.driveLink || ""
+  });
 
+  setShowEventForm(false);
+  setFormData({ title: '', description: '', date: '', imageOrLink: '', driveLink: '', id: null });
+
+  fetchEvents();
+};
+  
   const handleDeleteEvent = (id) => {
     if (!window.confirm("Are you sure you want to delete this event?")) return;
     const evts = getEvents().filter(ev => ev.id !== id);
