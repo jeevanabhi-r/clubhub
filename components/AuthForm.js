@@ -11,10 +11,67 @@ function AuthForm() {
     console.log("Login clicked");
   };
 
-  const handleRegister = (e) => {
-    e.preventDefault();
-    console.log("Register clicked");
-  };
+  const handleRegister = async (e) => {
+  e.preventDefault();
+
+  if (!email || !password || !name) return;
+
+  setLoading(true);
+  setMsg({ type: "", text: "" });
+
+  try {
+    // 🔍 Check if user already exists
+    const snapshot = await window.getDocs(
+      window.collection(window.db, "users")
+    );
+
+    let exists = false;
+
+    snapshot.forEach((doc) => {
+      if (doc.data().email === email) {
+        exists = true;
+      }
+    });
+
+    if (exists) {
+      setMsg({ type: "error", text: "Email already registered" });
+      setLoading(false);
+      return;
+    }
+
+    // ✅ Save user in Firebase
+    const docRef = await window.addDoc(
+      window.collection(window.db, "users"),
+      {
+        name,
+        email,
+        password,
+        role: "student",
+        createdAt: new Date()
+      }
+    );
+
+    // ✅ Save session (IMPORTANT FIX)
+    localStorage.setItem("clubhub_user", JSON.stringify({
+      id: docRef.id,
+      name,
+      email,
+      role: "student"
+    }));
+
+    setMsg({ type: "success", text: "Registration successful" });
+
+    setTimeout(() => {
+      setView("login");
+    }, 1500);
+
+  } catch (err) {
+    console.error("REGISTER ERROR:", err);
+    setMsg({ type: "error", text: "Registration failed" });
+  }
+
+  setLoading(false);
+};
 return (
   <div className="space-y-4">
 
