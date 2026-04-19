@@ -82,16 +82,21 @@ function Dashboard() {
     }
   };
 
-  const getEvents = () => JSON.parse(localStorage.getItem('clubhub_events') || '[]');
-  const saveEvents = (evts) => localStorage.setItem('clubhub_events', JSON.stringify(evts));
+ 
+  const fetchEvents = async () => {
+  setLoading(true);
 
-  const fetchEvents = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setEvents(getEvents());
-      setLoading(false);
-    }, 300);
-  };
+  const snapshot = await window.getDocs(window.collection(window.db, "events"));
+
+  let eventsData = [];
+
+  snapshot.forEach((doc) => {
+    eventsData.push({ id: doc.id, ...doc.data() });
+  });
+
+  setEvents(eventsData);
+  setLoading(false);
+};
 
   const handleSaveEvent = (e) => {
     e.preventDefault();
