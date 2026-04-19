@@ -68,5 +68,45 @@
     <div id="root"></div>
     <script type="text/babel" src="components/AuthForm.js"></script>
     <script type="text/babel" src="auth-app.js"></script>
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+// 🔑 Your Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyBKUEzo6UdEBcwY4AnDkUSh0hsLskXHxfE",
+  authDomain: "clubhub-ee725.firebaseapp.com",
+  projectId: "clubhub-ee725",
+  storageBucket: "clubhub-ee725.firebasestorage.app",
+  messagingSenderId: "845819250879",
+  appId: "1:845819250879:web:86d71921dbda02ec655e0a",
+  measurementId: "G-FB444CMMFJ"
+};
+
+// ✅ Initialize Firebase
+const app = initializeApp(firebaseConfig);
+
+// ✅ Connect Firestore (database)
+const db = getFirestore(app);
+
+// 🔥 FETCH EVENTS FROM FIREBASE
+async function loadEvents() {
+  const snapshot = await getDocs(collection(db, "events"));
+
+  let events = [];
+
+  snapshot.forEach((doc) => {
+    events.push(doc.data());
+  });
+
+  console.log("Events:", events);
+
+  // TEMP: show on screen
+  document.body.innerHTML += `<pre>${JSON.stringify(events, null, 2)}</pre>`;
+}
+
+// 🚀 Call function
+loadEvents();
+</script>
 </body>
 </html>
