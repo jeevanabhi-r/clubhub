@@ -1,45 +1,86 @@
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false };
-  }
+function AuthForm() {
+  const [view, setView] = React.useState("login");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [name, setName] = React.useState("");
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return <div className="text-red-500 p-4">Something went wrong</div>;
-    }
-    return this.props.children;
-  }
-}
-
-function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-black p-4">
-      <div className="w-full max-w-md bg-zinc-900 rounded-2xl shadow-xl overflow-hidden">
+    <div className="space-y-4">
 
-        {/* HEADER */}
-        <div className="bg-orange-500 p-8 text-center">
-          <h1 className="text-2xl font-bold text-white">ClubHub</h1>
-          <p className="text-orange-100">College Clubs & Events</p>
-        </div>
+      {view === "login" && (
+        <form className="space-y-3">
 
-        {/* FORM */}
-        <div className="p-6">
-          <AuthForm />
-        </div>
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-3 rounded bg-gray-800 text-white"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
 
-      </div>
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-3 rounded bg-gray-800 text-white"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button className="w-full bg-orange-500 p-3 rounded text-white">
+            Login
+          </button>
+
+          <p className="text-gray-400 text-center">
+            No account?
+            <button onClick={() => setView("register")} className="text-orange-500 ml-1">
+              Register
+            </button>
+          </p>
+
+        </form>
+      )}
+
+      {view === "register" && (
+        <form className="space-y-3">
+
+          <input
+            type="text"
+            placeholder="Name"
+            className="w-full p-3 rounded bg-gray-800 text-white"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full p-3 rounded bg-gray-800 text-white"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-3 rounded bg-gray-800 text-white"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button className="w-full bg-orange-500 p-3 rounded text-white">
+            Register
+          </button>
+
+          <p className="text-gray-400 text-center">
+            Already have account?
+            <button onClick={() => setView("login")} className="text-orange-500 ml-1">
+              Login
+            </button>
+          </p>
+
+        </form>
+      )}
+
     </div>
   );
 }
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>
-);
