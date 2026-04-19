@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ClubHub</title>
 
   <!-- React -->
@@ -25,7 +25,7 @@
 <body>
   <div id="root"></div>
 
-  <!-- ✅ Firebase -->
+  <!-- 🔥 Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
     import {
@@ -39,7 +39,7 @@
       apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
       authDomain: "clubhub2-226c0.firebaseapp.com",
       projectId: "clubhub2-226c0",
-      storageBucket: "clubhub2-226c0.firebasestorage.app",
+      storageBucket: "clubhub2-226c0.appspot.com",
       messagingSenderId: "473457215975",
       appId: "1:473457215975:web:17c1eb7278a428be175542"
     };
@@ -55,10 +55,10 @@
     console.log("🔥 Firebase Connected");
   </script>
 
-  <!-- ✅ React App -->
+  <!-- 🔥 React App -->
   <script type="text/babel">
 
-    function AuthForm() {
+    function AuthForm({ onLogin }) {
       const [view, setView] = React.useState("login");
       const [email, setEmail] = React.useState("");
       const [password, setPassword] = React.useState("");
@@ -93,17 +93,21 @@
             window.collection(window.db, "users")
           );
 
-          let found = false;
+          let foundUser = null;
 
           snapshot.forEach((doc) => {
             const user = doc.data();
             if (user.email === email && user.password === password) {
-              found = true;
+              foundUser = user;
             }
           });
 
-          if (found) {
+          if (foundUser) {
             setMsg("✅ Login successful");
+
+            // 🔥 Redirect to dashboard
+            onLogin(foundUser);
+
           } else {
             setMsg("❌ Invalid credentials");
           }
@@ -126,21 +130,15 @@
           {view === "login" && (
             <form onSubmit={handleLogin} className="space-y-3">
 
-              <input
-                type="email"
-                placeholder="Email"
+              <input type="email" placeholder="Email"
                 className="w-full p-3 rounded bg-gray-800"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+                onChange={(e) => setEmail(e.target.value)} />
 
-              <input
-                type="password"
-                placeholder="Password"
+              <input type="password" placeholder="Password"
                 className="w-full p-3 rounded bg-gray-800"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+                onChange={(e) => setPassword(e.target.value)} />
 
               <button className="w-full bg-orange-500 p-3 rounded">
                 Login
@@ -148,11 +146,9 @@
 
               <p className="text-center text-gray-400">
                 No account?
-                <button
-                  type="button"
+                <button type="button"
                   onClick={() => setView("register")}
-                  className="text-orange-400 ml-1"
-                >
+                  className="text-orange-400 ml-1">
                   Register
                 </button>
               </p>
@@ -163,29 +159,20 @@
           {view === "register" && (
             <form onSubmit={handleRegister} className="space-y-3">
 
-              <input
-                type="text"
-                placeholder="Name"
+              <input type="text" placeholder="Name"
                 className="w-full p-3 rounded bg-gray-800"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+                onChange={(e) => setName(e.target.value)} />
 
-              <input
-                type="email"
-                placeholder="Email"
+              <input type="email" placeholder="Email"
                 className="w-full p-3 rounded bg-gray-800"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+                onChange={(e) => setEmail(e.target.value)} />
 
-              <input
-                type="password"
-                placeholder="Password"
+              <input type="password" placeholder="Password"
                 className="w-full p-3 rounded bg-gray-800"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
+                onChange={(e) => setPassword(e.target.value)} />
 
               <button className="w-full bg-orange-500 p-3 rounded">
                 Register
@@ -193,11 +180,9 @@
 
               <p className="text-center text-gray-400">
                 Already have account?
-                <button
-                  type="button"
+                <button type="button"
                   onClick={() => setView("login")}
-                  className="text-orange-400 ml-1"
-                >
+                  className="text-orange-400 ml-1">
                   Login
                 </button>
               </p>
@@ -209,12 +194,39 @@
       );
     }
 
+    // 🔥 DASHBOARD
+    function Dashboard({ user, onLogout }) {
+      return (
+        <div className="text-center space-y-4">
+
+          <h2 className="text-2xl">Welcome</h2>
+          <p className="text-orange-400 text-lg">{user.name}</p>
+
+          <button
+            onClick={onLogout}
+            className="bg-red-500 px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+
+        </div>
+      );
+    }
+
+    // 🔥 MAIN APP
     function App() {
+      const [user, setUser] = React.useState(null);
+
       return (
         <div className="min-h-screen flex items-center justify-center">
           <div className="w-full max-w-md p-6 bg-gray-900 rounded-xl">
-            <h1 className="text-2xl text-center mb-4">ClubHub</h1>
-            <AuthForm />
+
+            {!user ? (
+              <AuthForm onLogin={setUser} />
+            ) : (
+              <Dashboard user={user} onLogout={() => setUser(null)} />
+            )}
+
           </div>
         </div>
       );
@@ -223,6 +235,5 @@
     ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
   </script>
-
 </body>
 </html>
