@@ -1,285 +1,143 @@
 function AuthForm() {
-  const [view, setView] = React.useState('login'); // login, register, forgot, otp
+  const [view, setView] = React.useState('login');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [name, setName] = React.useState('');
-  const [otp, setOtp] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [msg, setMsg] = React.useState({ type: '', text: '' });
-  const [showPassword, setShowPassword] = React.useState(false);
 
-  const getUsers = () => JSON.parse(localStorage.getItem('clubhub_users') || '[]');
-  const saveUsers = (users) => localStorage.setItem('clubhub_users', JSON.stringify(users));
-
-  // Auto-redirect if already logged in, otherwise initialize admin user
   React.useEffect(() => {
     if (localStorage.getItem('clubhub_user')) {
       window.location.href = 'dashboard.html';
-      return;
-    }
-    const users = getUsers();
-    if (users.length === 0) {
-      users.push({
-        id: 'admin-1',
-        name: 'Admin User',
-        email: 'admin@college.edu',
-        password: 'admin',
-        role: 'admin',
-        avatar: ''
-      });
-      saveUsers(users);
     }
   }, []);
 
+  // 🔐 LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
+
     if (!email || !password) return;
+
     setLoading(true);
     setMsg({ type: '', text: '' });
-    
-    setTimeout(() => {
-      const users = getUsers();
-      const user = users.find(u => u.email === email && u.password === password);
-      
-      if (user) {
-        localStorage.setItem('clubhub_user', JSON.stringify(user));
-        window.location.href = 'dashboard.html';
+
+    try {
+      const snapshot = await window.getDocs(
+        window.collection(window.db, "users")
+      );
+
+      let foundUser = null;
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.email === email && data.password === password) {
+          foundUser = data;
+        }
+      });
+
+      if (foundUser) {
+        localStorage.setItem("clubhub_user", JSON.stringify(foundUser));
+        window.location.href = "dashboard.html";
       } else {
         setMsg({ type: 'error', text: 'Invalid email or password' });
       }
-      setLoading(false);
-    }, 500); // Simulate network delay
-  };
 
-  const handleRegister = async (e) => {
-  e.preventDefault();
-  if (!email || !password || !name) return;
-
-  setLoading(true);
-  setMsg({ type: '', text: '' });
-
-  try {
-    await window.addDoc(window.collection(window.db, "users"), {
-      name,
-      email,
-      password,
-      role: "student"
-    });
-
-    localStorage.setItem("clubhub_user", JSON.stringify({
-      name,
-      email,
-      role: "student"
-    }));
-
-    setMsg({ type: 'success', text: 'Registration successful!' });
-
-    setTimeout(() => {
-      window.location.href = 'dashboard.html';
-    }, 1500);
-
-  } catch (err) {
-    setMsg({ type: 'error', text: 'Registration failed' });
-  }
-
-  setLoading(false);
-};
-  };
-
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
-    if (!email) return;
-    setLoading(true);
-    setMsg({ type: '', text: '' });
-    
-    try {
-      const users = getUsers();
-      const userIndex = users.findIndex(u => u.email === email);
-      
-      if (userIndex > -1) {
-        const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiry = new Date(Date.now() + 5 * 60000).toISOString();
-        
-        users[userIndex].otp = generatedOtp;
-        users[userIndex].otpExpiry = expiry;
-        saveUsers(users);
-
-        // Send email via EmailJS official browser SDK
-        await window.emailjs.send(
-          'service_75u0cda',
-          'template_918c9mi',
-          {
-            to_email: email,
-            otp_code: generatedOtp.toString()
-          },
-          'jSvCapoUwGLGWTJKh'
-        );
-        
-        setMsg({ type: 'success', text: `OTP sent to ${email}. Please check your inbox.` });
-        setTimeout(() => setView('otp'), 2000);
-      } else {
-        setMsg({ type: 'error', text: 'Email not found.' });
-      }
     } catch (err) {
-      console.error("OTP send error:", err);
-      let errorDetail = String(err);
-      if (err) {
-        errorDetail = err.text || err.message || (typeof err === 'object' ? JSON.stringify(err, Object.getOwnPropertyNames(err)) : String(err));
-      }
-      setMsg({ type: 'error', text: `Failed to send OTP. Detail: ${errorDetail}` });
+      console.error(err);
+      setMsg({ type: 'error', text: 'Login failed' });
     }
+
     setLoading(false);
   };
 
-  const handleVerifyOtp = async (e) => {
+  // 📝 REGISTER
+  const handleRegister = async (e) => {
     e.preventDefault();
-    if (!otp || !password) return;
+
+    if (!email || !password || !name) return;
+
     setLoading(true);
     setMsg({ type: '', text: '' });
-    
-    setTimeout(() => {
-      const users = getUsers();
-      const userIndex = users.findIndex(u => u.email === email);
-      
-      if (userIndex > -1) {
-        const user = users[userIndex];
-        const isExpired = new Date(user.otpExpiry) < new Date();
-        if (user.otp === otp && !isExpired) {
-          users[userIndex].password = password;
-          users[userIndex].otp = '';
-          users[userIndex].otpExpiry = '';
-          saveUsers(users);
-          
-          setMsg({ type: 'success', text: 'Password reset successful! You can now login.' });
-          setTimeout(() => {
-            setView('login');
-            setPassword('');
-            setOtp('');
-          }, 2000);
-        } else {
-          setMsg({ type: 'error', text: 'Invalid or expired OTP.' });
-        }
-      }
-      setLoading(false);
-    }, 500);
-  };
 
-  const toggleTheme = () => {
-    if (document.documentElement.classList.contains('dark')) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+    try {
+      await window.addDoc(window.collection(window.db, "users"), {
+        name,
+        email,
+        password,
+        role: "student"
+      });
+
+      localStorage.setItem("clubhub_user", JSON.stringify({
+        name,
+        email,
+        role: "student"
+      }));
+
+      setMsg({ type: 'success', text: 'Registration successful!' });
+
+      setTimeout(() => {
+        window.location.href = "dashboard.html";
+      }, 1500);
+
+    } catch (err) {
+      console.error(err);
+      setMsg({ type: 'error', text: 'Registration failed' });
     }
+
+    setLoading(false);
   };
 
   return (
-    <div data-name="auth-form" data-file="components/AuthForm.js" className="relative">
-      <button 
-        onClick={toggleTheme} 
-        className="absolute -top-16 right-0 p-2 text-white/80 hover:text-white transition-colors"
-        title="Toggle Theme"
-      >
-        <div className="icon-moon dark:hidden text-xl"></div>
-        <div className="icon-sun hidden dark:block text-xl"></div>
-      </button>
+    <div className="space-y-4">
 
       {msg.text && (
-        <div className={`mb-4 p-3 rounded-lg text-sm ${msg.type === 'error' ? 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'}`}>
+        <div className={`p-3 rounded ${msg.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
           {msg.text}
         </div>
       )}
 
       {view === 'login' && (
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-            <input type="email" required className="input-field dark:bg-gray-800 dark:border-gray-700 dark:text-white" value={email} onChange={e=>setEmail(e.target.value)} placeholder="student@college.edu" disabled={loading} />
-          </div>
-          <div>
-            <div className="flex justify-between items-center mb-1">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
-              <button type="button" onClick={() => {setView('forgot'); setMsg({type:'',text:''})}} className="text-sm text-primary hover:underline" disabled={loading}>Forgot Password?</button>
-            </div>
-            <div className="relative">
-              <input type={showPassword ? "text" : "password"} required className="input-field dark:bg-gray-800 dark:border-gray-700 dark:text-white pr-10" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" disabled={loading} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <div className={showPassword ? 'icon-eye-off' : 'icon-eye'}></div>
-              </button>
-            </div>
-          </div>
-          <button type="submit" className="btn-primary mt-6" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login to ClubHub'}
+        <form onSubmit={handleLogin} className="space-y-3">
+          <input type="email" placeholder="Email" className="input-field"
+            value={email} onChange={e => setEmail(e.target.value)} />
+
+          <input type="password" placeholder="Password" className="input-field"
+            value={password} onChange={e => setPassword(e.target.value)} />
+
+          <button className="btn-primary">
+            {loading ? "Logging in..." : "Login"}
           </button>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
-            Don't have an account? <button type="button" onClick={() => {setView('register'); setMsg({type:'',text:''})}} className="text-primary font-medium" disabled={loading}>Register</button>
+
+          <p>
+            No account?
+            <button type="button" onClick={() => setView('register')}>
+              Register
+            </button>
           </p>
         </form>
       )}
 
       {view === 'register' && (
-        <form onSubmit={handleRegister} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full Name</label>
-            <input type="text" required className="input-field dark:bg-gray-800 dark:border-gray-700 dark:text-white" value={name} onChange={e=>setName(e.target.value)} placeholder="John Doe" disabled={loading} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-            <input type="email" required className="input-field dark:bg-gray-800 dark:border-gray-700 dark:text-white" value={email} onChange={e=>setEmail(e.target.value)} placeholder="student@college.edu" disabled={loading} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-            <div className="relative">
-              <input type={showPassword ? "text" : "password"} required className="input-field dark:bg-gray-800 dark:border-gray-700 dark:text-white pr-10" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" disabled={loading} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <div className={showPassword ? 'icon-eye-off' : 'icon-eye'}></div>
-              </button>
-            </div>
-          </div>
-          <button type="submit" className="btn-primary mt-6" disabled={loading}>
-            {loading ? 'Creating Account...' : 'Create Account'}
+        <form onSubmit={handleRegister} className="space-y-3">
+          <input type="text" placeholder="Name" className="input-field"
+            value={name} onChange={e => setName(e.target.value)} />
+
+          <input type="email" placeholder="Email" className="input-field"
+            value={email} onChange={e => setEmail(e.target.value)} />
+
+          <input type="password" placeholder="Password" className="input-field"
+            value={password} onChange={e => setPassword(e.target.value)} />
+
+          <button className="btn-primary">
+            {loading ? "Creating..." : "Register"}
           </button>
-          <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-4">
-            Already have an account? <button type="button" onClick={() => {setView('login'); setMsg({type:'',text:''})}} className="text-primary font-medium" disabled={loading}>Login</button>
+
+          <p>
+            Already have account?
+            <button type="button" onClick={() => setView('login')}>
+              Login
+            </button>
           </p>
-        </form>
-      )}
-
-      {view === 'forgot' && (
-        <form onSubmit={handleSendOtp} className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter your email address and we'll send you a 6-digit OTP to reset your password.</p>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-            <input type="email" required className="input-field dark:bg-gray-800 dark:border-gray-700 dark:text-white" value={email} onChange={e=>setEmail(e.target.value)} placeholder="student@college.edu" disabled={loading} />
-          </div>
-          <button type="submit" className="btn-primary mt-6" disabled={loading}>
-            {loading ? 'Sending...' : 'Send OTP'}
-          </button>
-          <button type="button" onClick={() => {setView('login'); setMsg({type:'',text:''})}} className="w-full mt-3 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-300" disabled={loading}>Back to Login</button>
-        </form>
-      )}
-
-      {view === 'otp' && (
-        <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter the 6-digit OTP sent to {email} and your new password.</p>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">OTP Code</label>
-            <input type="text" required maxLength="6" className="input-field text-center tracking-widest text-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white" value={otp} onChange={e=>setOtp(e.target.value)} placeholder="123456" disabled={loading} />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
-            <div className="relative">
-              <input type={showPassword ? "text" : "password"} required className="input-field dark:bg-gray-800 dark:border-gray-700 dark:text-white pr-10" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" disabled={loading} />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                <div className={showPassword ? 'icon-eye-off' : 'icon-eye'}></div>
-              </button>
-            </div>
-          </div>
-          <button type="submit" className="btn-primary mt-6" disabled={loading}>
-            {loading ? 'Resetting...' : 'Reset Password'}
-          </button>
-          <button type="button" onClick={() => {setView('forgot'); setMsg({type:'',text:''})}} className="w-full mt-3 text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-300" disabled={loading}>Back</button>
         </form>
       )}
     </div>
