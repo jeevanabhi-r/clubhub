@@ -3,10 +3,9 @@ function AuthForm() {
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [name, setName] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
   const [msg, setMsg] = React.useState("");
 
-  // 🔐 LOGIN
+  // LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -28,15 +27,16 @@ function AuthForm() {
         localStorage.setItem("clubhub_user", JSON.stringify(foundUser));
         window.location.href = "dashboard.html";
       } else {
-        setMsg("❌ Invalid credentials");
+        setMsg("❌ Invalid email or password");
       }
+
     } catch (err) {
       console.error(err);
-      setMsg("❌ Login error");
+      setMsg("❌ Login failed");
     }
   };
 
-  // 📝 REGISTER
+  // REGISTER
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -48,8 +48,9 @@ function AuthForm() {
         role: "student"
       });
 
-      setMsg("✅ Registered successfully");
+      setMsg("✅ Registration successful");
       setView("login");
+
     } catch (err) {
       console.error(err);
       setMsg("❌ Registration failed");
