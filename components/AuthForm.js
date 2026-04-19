@@ -52,34 +52,38 @@ function AuthForm() {
   };
 
   const handleRegister = async (e) => {
-    e.preventDefault();
-    if (!email || !password || !name) return;
-    setLoading(true);
-    setMsg({ type: '', text: '' });
-    
+  e.preventDefault();
+  if (!email || !password || !name) return;
+
+  setLoading(true);
+  setMsg({ type: '', text: '' });
+
+  try {
+    await window.addDoc(window.collection(window.db, "users"), {
+      name,
+      email,
+      password,
+      role: "student"
+    });
+
+    localStorage.setItem("clubhub_user", JSON.stringify({
+      name,
+      email,
+      role: "student"
+    }));
+
+    setMsg({ type: 'success', text: 'Registration successful!' });
+
     setTimeout(() => {
-      const users = getUsers();
-      const existingUser = users.find(u => u.email === email);
-      
-      if (existingUser) {
-        setMsg({ type: 'error', text: 'Email already registered.' });
-      } else {
-        const newUser = {
-          id: Date.now().toString(),
-          name,
-          email,
-          password,
-          role: 'student',
-          avatar: ''
-        };
-        users.push(newUser);
-        saveUsers(users);
-        
-        setMsg({ type: 'success', text: 'Registration successful! Please login.' });
-        setTimeout(() => setView('login'), 2000);
-      }
-      setLoading(false);
-    }, 500);
+      window.location.href = 'dashboard.html';
+    }, 1500);
+
+  } catch (err) {
+    setMsg({ type: 'error', text: 'Registration failed' });
+  }
+
+  setLoading(false);
+};
   };
 
   const handleSendOtp = async (e) => {
