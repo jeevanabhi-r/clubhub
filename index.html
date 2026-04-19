@@ -74,22 +74,21 @@ import { getFirestore, collection, getDocs } from "https://www.gstatic.com/fireb
 
 // 🔑 Your Firebase config
 const firebaseConfig = {
-  apiKey: "AIzaSyBKUEzo6UdEBcwY4AnDkUSh0hsLskXHxfE",
-  authDomain: "clubhub-ee725.firebaseapp.com",
-  projectId: "clubhub-ee725",
-  storageBucket: "clubhub-ee725.firebasestorage.app",
-  messagingSenderId: "845819250879",
-  appId: "1:845819250879:web:86d71921dbda02ec655e0a",
-  measurementId: "G-FB444CMMFJ"
+  apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
+  authDomain: "clubhub2-226c0.firebaseapp.com",
+  projectId: "clubhub2-226c0",
+  storageBucket: "clubhub2-226c0.firebasestorage.app",
+  messagingSenderId: "473457215975",
+  appId: "1:473457215975:web:17c1eb7278a428be175542"
 };
 
 // ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// ✅ Connect Firestore (database)
+// ✅ Connect Firestore
 const db = getFirestore(app);
 
-// 🔥 FETCH EVENTS FROM FIREBASE
+// 🔥 Fetch events from database
 async function loadEvents() {
   const snapshot = await getDocs(collection(db, "events"));
 
@@ -101,12 +100,13 @@ async function loadEvents() {
 
   console.log("Events:", events);
 
-  // TEMP: show on screen
+  // TEMP display on screen
   document.body.innerHTML += `<pre>${JSON.stringify(events, null, 2)}</pre>`;
 }
 
 // 🚀 Call function
 loadEvents();
 </script>
+   
 </body>
 </html>
