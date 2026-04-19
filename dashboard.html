@@ -57,5 +57,34 @@
     <div id="root"></div>
     <script type="text/babel" src="components/Dashboard.js"></script>
     <script type="text/babel" src="dashboard-app.js"></script>
+    <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  getDocs, 
+  addDoc 
+} from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+
+// 🔑 Your config
+const firebaseConfig = {
+  apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
+  authDomain: "clubhub2-226c0.firebaseapp.com",
+  projectId: "clubhub2-226c0",
+  storageBucket: "clubhub2-226c0.firebasestorage.app",
+  messagingSenderId: "473457215975",
+  appId: "1:473457215975:web:17c1eb7278a428be175542"
+};
+
+// ✅ Init
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// ✅ Make global (VERY IMPORTANT)
+window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+window.addDoc = addDoc;
+</script>
 </body>
 </html>
