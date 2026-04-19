@@ -4,179 +4,150 @@ function AuthForm() {
   const [password, setPassword] = React.useState("");
   const [name, setName] = React.useState("");
   const [loading, setLoading] = React.useState(false);
-  const [msg, setMsg] = React.useState({ type: "", text: "" });
+  const [msg, setMsg] = React.useState("");
 
-  const handleLogin = (e) => {
+  // 🔐 LOGIN
+  const handleLogin = async (e) => {
     e.preventDefault();
-    console.log("Login clicked");
+
+    try {
+      const snapshot = await window.getDocs(
+        window.collection(window.db, "users")
+      );
+
+      let foundUser = null;
+
+      snapshot.forEach((doc) => {
+        const user = doc.data();
+        if (user.email === email && user.password === password) {
+          foundUser = user;
+        }
+      });
+
+      if (foundUser) {
+        localStorage.setItem("clubhub_user", JSON.stringify(foundUser));
+        window.location.href = "dashboard.html";
+      } else {
+        setMsg("❌ Invalid credentials");
+      }
+    } catch (err) {
+      console.error(err);
+      setMsg("❌ Login error");
+    }
   };
 
+  // 📝 REGISTER
   const handleRegister = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!email || !password || !name) return;
-
-  setLoading(true);
-  setMsg({ type: "", text: "" });
-
-  try {
-    // 🔍 Check if user already exists
-    const snapshot = await window.getDocs(
-      window.collection(window.db, "users")
-    );
-
-    let exists = false;
-
-    snapshot.forEach((doc) => {
-      if (doc.data().email === email) {
-        exists = true;
-      }
-    });
-
-    if (exists) {
-      setMsg({ type: "error", text: "Email already registered" });
-      setLoading(false);
-      return;
-    }
-
-    // ✅ Save user in Firebase
-    const docRef = await window.addDoc(
-      window.collection(window.db, "users"),
-      {
+    try {
+      await window.addDoc(window.collection(window.db, "users"), {
         name,
         email,
         password,
-        role: "student",
-        createdAt: new Date()
-      }
-    );
+        role: "student"
+      });
 
-    // ✅ Save session (IMPORTANT FIX)
-    localStorage.setItem("clubhub_user", JSON.stringify({
-      id: docRef.id,
-      name,
-      email,
-      role: "student"
-    }));
-
-    setMsg({ type: "success", text: "Registration successful" });
-
-    setTimeout(() => {
+      setMsg("✅ Registered successfully");
       setView("login");
-    }, 1500);
+    } catch (err) {
+      console.error(err);
+      setMsg("❌ Registration failed");
+    }
+  };
 
-  } catch (err) {
-    console.error("REGISTER ERROR:", err);
-    setMsg({ type: "error", text: "Registration failed" });
-  }
+  return (
+    <div className="space-y-4 text-white">
 
-  setLoading(false);
-};
-return (
-  <div className="space-y-4">
+      {/* MESSAGE */}
+      {msg && (
+        <div className="bg-red-500 p-2 rounded text-center">
+          {msg}
+        </div>
+      )}
 
-    {msg.text && (
-      <div className={`p-3 rounded ${msg.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'}`}>
-        {msg.text}
-      </div>
-    )}
+      {/* LOGIN */}
+      {view === "login" && (
+        <form onSubmit={handleLogin} className="space-y-4">
 
-    {view === 'login' && (
-      <form onSubmit={handleLogin} className="space-y-4">
-
-        {/* Email */}
-        <div>
-          <label className="block text-sm mb-1">Email</label>
           <input
             type="email"
-            placeholder="student@college.edu"
-            className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="Email"
+            className="w-full px-4 py-2 bg-zinc-800 rounded"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
-
-        {/* Password */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <label>Password</label>
-            <span className="text-orange-500 cursor-pointer">Forgot Password?</span>
-          </div>
 
           <input
             type="password"
-            placeholder="••••••••"
-            className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            placeholder="Password"
+            className="w-full px-4 py-2 bg-zinc-800 rounded"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
           />
-        </div>
 
-        {/* Button */}
-        <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg">
-          {loading ? "Logging in..." : "Login to ClubHub"}
-        </button>
-
-        {/* Switch */}
-        <p className="text-center text-gray-400">
-          Don’t have an account?
-          <button
-            type="button"
-            className="text-orange-500 ml-1"
-            onClick={() => setView('register')}
-          >
-            Register
-          </button>
-        </p>
-
-      </form>
-    )}
-
-    {/* REGISTER UI (keep simple or same style) */}
-    {view === 'register' && (
-      <form onSubmit={handleRegister} className="space-y-4">
-
-        <input
-          type="text"
-          placeholder="Full Name"
-          className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
-          value={name}
-          onChange={e => setName(e.target.value)}
-        />
-
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          className="w-full px-4 py-3 rounded-lg bg-zinc-800 text-white border border-zinc-700"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-        />
-
-        <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-lg">
-          {loading ? "Creating..." : "Register"}
-        </button>
-
-        <p className="text-center text-gray-400">
-          Already have account?
-          <button
-            type="button"
-            className="text-orange-500 ml-1"
-            onClick={() => setView('login')}
-          >
+          <button className="w-full bg-orange-500 py-2 rounded">
             Login
           </button>
-        </p>
 
-      </form>
-    )}
+          <p className="text-center">
+            No account?
+            <span
+              className="text-orange-500 cursor-pointer ml-1"
+              onClick={() => setView("register")}
+            >
+              Register
+            </span>
+          </p>
 
-  </div>
-);
+        </form>
+      )}
+
+      {/* REGISTER */}
+      {view === "register" && (
+        <form onSubmit={handleRegister} className="space-y-4">
+
+          <input
+            type="text"
+            placeholder="Name"
+            className="w-full px-4 py-2 bg-zinc-800 rounded"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full px-4 py-2 bg-zinc-800 rounded"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full px-4 py-2 bg-zinc-800 rounded"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button className="w-full bg-orange-500 py-2 rounded">
+            Register
+          </button>
+
+          <p className="text-center">
+            Already have account?
+            <span
+              className="text-orange-500 cursor-pointer ml-1"
+              onClick={() => setView("login")}
+            >
+              Login
+            </span>
+          </p>
+
+        </form>
+      )}
+
+    </div>
+  );
+}
