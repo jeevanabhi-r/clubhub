@@ -67,8 +67,7 @@
 <body>
     <div id="root"></div>
     <div id="events-container"></div>
-    <script type="text/babel" src="components/AuthForm.js"></script>
-    <script type="text/babel" src="auth-app.js"></script>
+   
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
 import { 
@@ -106,6 +105,19 @@ console.log("🔥 Firebase Connected");
 </script>
     <script>
   console.log("HTML loaded");
+</script>
+    <script type="text/babel">
+
+function App() {
+  return (
+    <div style={{color:"white", textAlign:"center", marginTop:"100px"}}>
+      <h1>🔥 ClubHub Working</h1>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
 </script>
 </body>
 </html>
