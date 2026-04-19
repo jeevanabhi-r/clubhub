@@ -80,7 +80,14 @@ const firebaseConfig = {
 
 // ✅ Init
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = getFirestore(
+    window.db = db;
+window.collection = collection;
+window.getDocs = getDocs;
+window.addDoc = addDoc;
+window.updateDoc = updateDoc;
+window.doc = doc;
+);
 
 // ✅ Make global (VERY IMPORTANT)
 window.db = db;
