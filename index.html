@@ -1,123 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ClubHub - Login</title>
-    <meta name="description" content="Manage college clubs and events with ClubHub.">
-    
-    <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
-    <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#f97316',
-                        'primary-hover': '#ea580c',
-                    }
-                }
-            }
-        }
-        // Default to dark mode for black interface
-        if (localStorage.getItem('theme') === 'light') {
-            document.documentElement.classList.remove('dark');
-        } else {
-            document.documentElement.classList.add('dark');
-            if (!localStorage.getItem('theme')) localStorage.setItem('theme', 'dark');
-        }
-    </script>
-    <link href="https://resource.trickle.so/vendor_lib/unpkg/lucide-static@0.516.0/font/lucide.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClubHub</title>
 
-    <style type="text/tailwindcss">
-    @layer theme {
-        :root {
-            --primary-color: #f97316; /* orange-500 */
-            --primary-hover: #ea580c; /* orange-600 */
-            --bg-color: #fff7ed;      /* orange-50 */
-        }
+  <!-- React -->
+  <script src="https://resource.trickle.so/vendor_lib/unpkg/react@18/umd/react.production.min.js"></script>
+  <script src="https://resource.trickle.so/vendor_lib/unpkg/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://resource.trickle.so/vendor_lib/unpkg/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: Arial, sans-serif;
     }
-    @layer base {
-        body {
-            @apply bg-orange-50 dark:bg-black dark:text-gray-100 transition-colors duration-200;
-            font-family: 'Inter', sans-serif;
-        }
-    }
-    @layer components {
-        .btn-primary {
-            @apply w-full bg-[var(--primary-color)] hover:bg-[var(--primary-hover)] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
-        }
-        .input-field {
-            @apply w-full px-4 py-2 border border-orange-200 rounded-lg focus:ring-2 focus:ring-[var(--primary-color)] focus:border-transparent outline-none transition-all;
-        }
-    }
-    </style>
-    <style>
-        /* Hide "Built with Trickle" badge */
-        a[href*="trickle"], 
-        div:has(a[href*="trickle"]) {
-            display: none !important;
-        }
-    </style>
+  </style>
 </head>
+
 <body>
-    <div id="root"></div>
-    <div id="events-container"></div>
-   
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { 
-  getFirestore, 
-  collection, 
-  getDocs, 
-  addDoc, 
-  updateDoc, 
-  doc 
-} from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+  <div id="root"></div>
 
-// 🔑 Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
-  authDomain: "clubhub2-226c0.firebaseapp.com",
-  projectId: "clubhub2-226c0",
-  storageBucket: "clubhub2-226c0.firebasestorage.app",
-  messagingSenderId: "473457215975",
-  appId: "1:473457215975:web:17c1eb7278a428be175542"
-};
+  <!-- ✅ Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      addDoc
+    } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
-// ✅ Init
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+    const firebaseConfig = {
+      apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
+      authDomain: "clubhub2-226c0.firebaseapp.com",
+      projectId: "clubhub2-226c0",
+      storageBucket: "clubhub2-226c0.firebasestorage.app",
+      messagingSenderId: "473457215975",
+      appId: "1:473457215975:web:17c1eb7278a428be175542"
+    };
 
-// ✅ MAKE GLOBAL (VERY IMPORTANT)
-window.db = db;
-window.collection = collection;
-window.getDocs = getDocs;
-window.addDoc = addDoc;
-window.updateDoc = updateDoc;
-window.doc = doc;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-console.log("🔥 Firebase Connected");
-</script>
-    <script>
-  console.log("HTML loaded");
-</script>
-    <script type="text/babel">
+    window.db = db;
+    window.collection = collection;
+    window.getDocs = getDocs;
+    window.addDoc = addDoc;
 
-function App() {
-  return (
-    <div style={{color:"white", textAlign:"center", marginTop:"100px"}}>
-      <h1>🔥 ClubHub Working</h1>
-    </div>
-  );
-}
+    console.log("🔥 Firebase Connected");
+  </script>
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  <!-- ✅ React App -->
+  <script type="text/babel">
 
-</script>
+    function AuthForm() {
+      const [view, setView] = React.useState("login");
+      const [email, setEmail] = React.useState("");
+      const [password, setPassword] = React.useState("");
+      const [name, setName] = React.useState("");
+      const [msg, setMsg] = React.useState("");
+
+      // REGISTER
+      const handleRegister = async (e) => {
+        e.preventDefault();
+
+        try {
+          await window.addDoc(window.collection(window.db, "users"), {
+            name,
+            email,
+            password
+          });
+
+          setMsg("✅ Registered successfully");
+          setView("login");
+        } catch (err) {
+          console.error(err);
+          setMsg("❌ Registration failed");
+        }
+      };
+
+      // LOGIN
+      const handleLogin = async (e) => {
+        e.preventDefault();
+
+        try {
+          const snapshot = await window.getDocs(
+            window.collection(window.db, "users")
+          );
+
+          let found = false;
+
+          snapshot.forEach((doc) => {
+            const user = doc.data();
+            if (user.email === email && user.password === password) {
+              found = true;
+            }
+          });
+
+          if (found) {
+            setMsg("✅ Login successful");
+          } else {
+            setMsg("❌ Invalid credentials");
+          }
+
+        } catch (err) {
+          console.error(err);
+          setMsg("❌ Login error");
+        }
+      };
+
+      return (
+        <div className="space-y-4">
+
+          <h2 className="text-xl text-center">
+            {view === "login" ? "Login" : "Register"}
+          </h2>
+
+          {msg && <p className="text-yellow-400 text-center">{msg}</p>}
+
+          {view === "login" && (
+            <form onSubmit={handleLogin} className="space-y-3">
+
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full p-3 rounded bg-gray-800"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full p-3 rounded bg-gray-800"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <button className="w-full bg-orange-500 p-3 rounded">
+                Login
+              </button>
+
+              <p className="text-center text-gray-400">
+                No account?
+                <button
+                  type="button"
+                  onClick={() => setView("register")}
+                  className="text-orange-400 ml-1"
+                >
+                  Register
+                </button>
+              </p>
+
+            </form>
+          )}
+
+          {view === "register" && (
+            <form onSubmit={handleRegister} className="space-y-3">
+
+              <input
+                type="text"
+                placeholder="Name"
+                className="w-full p-3 rounded bg-gray-800"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full p-3 rounded bg-gray-800"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full p-3 rounded bg-gray-800"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <button className="w-full bg-orange-500 p-3 rounded">
+                Register
+              </button>
+
+              <p className="text-center text-gray-400">
+                Already have account?
+                <button
+                  type="button"
+                  onClick={() => setView("login")}
+                  className="text-orange-400 ml-1"
+                >
+                  Login
+                </button>
+              </p>
+
+            </form>
+          )}
+
+        </div>
+      );
+    }
+
+    function App() {
+      return (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-full max-w-md p-6 bg-gray-900 rounded-xl">
+            <h1 className="text-2xl text-center mb-4">ClubHub</h1>
+            <AuthForm />
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+
+  </script>
+
 </body>
 </html>
