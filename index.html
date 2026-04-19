@@ -71,7 +71,7 @@
     <script type="text/babel" src="auth-app.js"></script>
     <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBozFPbqUn7nTwbjRC027ACfbAakY8ocwE",
@@ -85,48 +85,13 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ✅ Fetch + render
-async function loadEvents() {
-  const snapshot = await getDocs(collection(db, "events"));
-  let events = [];
+// 🔥 MAKE GLOBAL (IMPORTANT)
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
 
-  snapshot.forEach((doc) => {
-    events.push(doc.data());
-  });
-
-  renderEvents(events);
-}
-
-// ✅ Render UI
-function renderEvents(events) {
-  const container = document.getElementById("events-container");
-
-  if (!container) return;
-
-  if (events.length === 0) {
-    container.innerHTML = "No upcoming events";
-    return;
-  }
-
-  container.innerHTML = events.map(event => `
-    <div style="
-      background:#1e1e1e;
-      padding:15px;
-      margin:10px 0;
-      border-radius:10px;
-      color:white;
-    ">
-      <h3>${event.title}</h3>
-      <p>${event.date}</p>
-      <p>${event.description}</p>
-    </div>
-  `).join("");
-}
-
-// 🚀 IMPORTANT: Call function
-loadEvents();
+console.log("Firebase (Auth page) connected ✅");
 </script>
-  
    
 </body>
 </html>
