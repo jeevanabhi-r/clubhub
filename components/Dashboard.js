@@ -133,29 +133,43 @@ const handleSaveEvent = async (e) => {
     setShowEventForm(true);
   };
 
-  const handleUpdateProfile = (e) => {
-    e.preventDefault();
-    try {
-      const users = JSON.parse(localStorage.getItem('clubhub_users') || '[]');
-      const userIndex = users.findIndex(u => u.id === user.id);
-      
-      if (userIndex > -1) {
-        users[userIndex].name = e.target.name.value;
-        users[userIndex].avatar = avatarPreview;
-        localStorage.setItem('clubhub_users', JSON.stringify(users));
-        
-        const updatedUser = { ...user, name: e.target.name.value, avatar: avatarPreview };
-        setUser(updatedUser);
-        localStorage.setItem('clubhub_user', JSON.stringify(updatedUser));
-        
-        setProfileMsg({ type: 'success', text: 'Profile updated successfully!' });
-        setTimeout(() => setProfileMsg({type:'',text:''}), 3000);
+  const handleUpdateProfile = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("clubhub_user"));
+
+    if (!user) return;
+
+    const snapshot = await window.getDocs(
+      window.collection(window.db, "users")
+    );
+
+    let docId = null;
+
+    snapshot.forEach((doc) => {
+      if (doc.data().email === user.email) {
+        docId = doc.id;
       }
-    } catch (err) {
-      console.error(err);
-      setProfileMsg({ type: 'error', text: 'Failed to update profile.' });
+    });
+
+    if (!docId) {
+      alert("User not found");
+      return;
     }
-  };
+
+    await window.updateDoc(
+      window.doc(window.db, "users", docId),
+      {
+        name: user.name   // or use state variable
+      }
+    );
+
+    alert("Profile updated successfully");
+
+  } catch (err) {
+    console.error(err);
+    alert("Update failed");
+  }
+};
 
   const handleChangePassword = (e) => {
     e.preventDefault();
