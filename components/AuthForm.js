@@ -51,6 +51,11 @@ const handleLogin = async (e) => {
 const handleRegister = async (e) => {
   e.preventDefault();
 
+  if (!window.firebase || !firebase.auth) {
+    alert("Firebase not loaded yet");
+    return;
+  }
+
   try {
     const userCred = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
@@ -60,6 +65,7 @@ const handleRegister = async (e) => {
     });
 
     alert("Registered successfully!");
+
   } catch (err) {
     console.error(err);
     alert(err.message);
