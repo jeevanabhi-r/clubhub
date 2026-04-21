@@ -31,49 +31,39 @@ function AuthForm() {
     }
   }, []);
 
-  const handleLogin = async (e) => {
+const handleLogin = async (e) => {
   e.preventDefault();
-  setLoading(true);
-  setMsg({ type: '', text: '' });
 
   try {
-    const userCred = await window.auth.signInWithEmailAndPassword(email, password);
+    const userCred = await firebase.auth().signInWithEmailAndPassword(email, password);
 
-    localStorage.setItem('clubhub_user', JSON.stringify({
+    localStorage.setItem("clubhub_user", JSON.stringify({
       email: userCred.user.email,
       uid: userCred.user.uid
     }));
 
-    window.location.href = 'dashboard.html';
-
+    window.location.href = "dashboard.html";
   } catch (err) {
-    setMsg({ type: 'error', text: err.message });
+    alert(err.message);
   }
-
-  setLoading(false);
 };
 
- const handleRegister = async (e) => {
+const handleRegister = async (e) => {
   e.preventDefault();
-  setLoading(true);
-  setMsg({ type: '', text: '' });
 
   try {
-    const userCred = await window.auth.createUserWithEmailAndPassword(email, password);
+    const userCred = await firebase.auth().createUserWithEmailAndPassword(email, password);
 
-    await window.db.collection("users").doc(userCred.user.uid).set({
+    await firebase.firestore().collection("users").doc(userCred.user.uid).set({
       name,
       email
     });
 
-    setMsg({ type: 'success', text: 'Registered successfully! Please login.' });
-    setTimeout(() => setView('login'), 2000);
-
+    alert("Registered successfully!");
   } catch (err) {
-    setMsg({ type: 'error', text: err.message });
+    console.error(err);
+    alert(err.message);
   }
-
-  setLoading(false);
 };
   const handleSendOtp = async (e) => {
     e.preventDefault();
