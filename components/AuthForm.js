@@ -32,56 +32,49 @@ function AuthForm() {
   }, []);
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    if (!email || !password) return;
-    setLoading(true);
-    setMsg({ type: '', text: '' });
-    
-    setTimeout(() => {
-      const users = getUsers();
-      const user = users.find(u => u.email === email && u.password === password);
-      
-      if (user) {
-        localStorage.setItem('clubhub_user', JSON.stringify(user));
-        window.location.href = 'dashboard.html';
-      } else {
-        setMsg({ type: 'error', text: 'Invalid email or password' });
-      }
-      setLoading(false);
-    }, 500); // Simulate network delay
-  };
+  e.preventDefault();
+  setLoading(true);
+  setMsg({ type: '', text: '' });
 
-  const handleRegister = async (e) => {
-    e.preventDefault();
-    if (!email || !password || !name) return;
-    setLoading(true);
-    setMsg({ type: '', text: '' });
-    
-    setTimeout(() => {
-      const users = getUsers();
-      const existingUser = users.find(u => u.email === email);
-      
-      if (existingUser) {
-        setMsg({ type: 'error', text: 'Email already registered.' });
-      } else {
-        const newUser = {
-          id: Date.now().toString(),
-          name,
-          email,
-          password,
-          role: 'student',
-          avatar: ''
-        };
-        users.push(newUser);
-        saveUsers(users);
-        
-        setMsg({ type: 'success', text: 'Registration successful! Please login.' });
-        setTimeout(() => setView('login'), 2000);
-      }
-      setLoading(false);
-    }, 500);
-  };
+  try {
+    const userCred = await window.auth.signInWithEmailAndPassword(email, password);
 
+    localStorage.setItem('clubhub_user', JSON.stringify({
+      email: userCred.user.email,
+      uid: userCred.user.uid
+    }));
+
+    window.location.href = 'dashboard.html';
+
+  } catch (err) {
+    setMsg({ type: 'error', text: err.message });
+  }
+
+  setLoading(false);
+};
+
+ const handleRegister = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setMsg({ type: '', text: '' });
+
+  try {
+    const userCred = await window.auth.createUserWithEmailAndPassword(email, password);
+
+    await window.db.collection("users").doc(userCred.user.uid).set({
+      name,
+      email
+    });
+
+    setMsg({ type: 'success', text: 'Registered successfully! Please login.' });
+    setTimeout(() => setView('login'), 2000);
+
+  } catch (err) {
+    setMsg({ type: 'error', text: err.message });
+  }
+
+  setLoading(false);
+};
   const handleSendOtp = async (e) => {
     e.preventDefault();
     if (!email) return;
